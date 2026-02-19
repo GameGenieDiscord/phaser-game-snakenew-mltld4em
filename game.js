@@ -4,6 +4,10 @@ let obstacles, powerups, snakeBody = [], direction = 'right', nextDirection = 'r
 let powerupActive = false, powerupTimer = 0;
 let lastMoveTime = 0; // Track when snake last moved
 
+// Music and sound variables
+let synth, bassSynth, leadSynth, reverb, gain;
+let musicStarted = false;
+
 function preload() {
     // Create simple textures programmatically
     const graphics = this.make.graphics({ x: 0, y: 0, add: false });
@@ -88,6 +92,18 @@ function create() {
     this.physics.add.overlap(snake, food, eatFood, null, this);
     this.physics.add.overlap(snake, powerups, collectPowerup, null, this);
     this.physics.add.collider(snake, obstacles, hitObstacle, null, this);
+    
+    // Initialize music
+    initMusic();
+    
+    // Start music on first user interaction
+    this.input.keyboard.once('keydown', () => {
+        if (!musicStarted) {
+            Tone.start();
+            startMusic();
+            musicStarted = true;
+        }
+    });
 }
 
 function update(time, delta) {
@@ -136,6 +152,7 @@ function update(time, delta) {
             fill: '#ff0000',
             fontFamily: 'Arial'
         }).setOrigin(0.5);
+        stopMusic();
     }
     
     // Check self collision
@@ -147,6 +164,7 @@ function update(time, delta) {
                 fill: '#ff0000',
                 fontFamily: 'Arial'
             }).setOrigin(0.5);
+            stopMusic();
         }
     }
     
@@ -157,6 +175,90 @@ function update(time, delta) {
             powerupActive = false;
             snake.setTint(0xffffff);
         }
+    }
+}
+
+function initMusic() {
+    // Create reverb effect
+    reverb = new Tone.Reverb(1.2).toDestination();
+    
+    // Master gain to control overall volume
+    gain = new Tone.Gain(-12).toDestination();
+    
+    // Bass synth for low-end groove
+    bassSynth = new Tone.MonoSynth({
+        oscillator: { type: 'sawtooth' },
+        filter: { frequency: 400 },
+        envelope: { attack: 0.1, decay: 0.2, sustain: 0.4, release: 0.8 }
+    }).connect(reverb).connect(gain);
+    
+    // Chord synth for harmony
+    synth = new Tone.PolySynth(Tone.Synth, {
+        oscillator: { type: 'triangle' },
+        envelope: { attack: 0.05, decay: 0.3, sustain: 0.3, release: 0.8 }
+    }).connect(reverb).connect(gain);
+    
+    // Lead synth for melody
+    leadSynth = new Tone.MonoSynth({
+        oscillator: { type: 'square' },
+        filter: { frequency: 800 },
+        envelope: { attack: 0.02, decay: 0.1, sustain: 0.2, release: 0.5 }
+    }).connect(reverb).connect(gain);
+}
+
+function startMusic() {
+    // Set tempo
+    Tone.Transport.bpm.value = 120;
+    
+    // Bass pattern - driving 8th notes
+    const bassLoop = new Tone.Loop((time) => {
+        bassSynth.triggerAttackRelease('C2', '8n', time);
+    }, '4n').start(0);
+    
+    // Chord progression - I-vi-IV-V
+    const chordPattern = ['C4', 'A3', 'F3', 'G3'];
+    let chordIndex = 0;
+    const chordLoop = new Tone.Loop((time) => {
+        synth.triggerAttackRelease(chordPattern[chordIndex], '2n', time);
+        chordIndex = (chordIndex + 1) % chordPattern.length;
+    }, '2n').start(0);
+    
+    // Melody - upbeat arpeggio
+    const melodyNotes = ['C5', 'E5', 'G5', 'C6', 'G5', 'E5', 'C5', 'G4'];
+    let melodyIndex = 0;
+    const melodyLoop = new Tone.Loop((time) => {
+        leadSynth.triggerAttackRelease(melodyNotes[melodyIndex], '8n', time);
+        melodyIndex = (melodyIndex + 1) % melodyNotes.length;
+    }, '8n').start('4n');
+    
+    // Start transport
+    Tone.Transport.start();
+}
+
+function stopMusic() {
+    Tone.Transport.stop();
+}
+
+function playSound(type) {
+    if (!musicStarted) return;
+    
+    const now = Tone.now();
+    switch (type) {
+        case 'eat':
+            // Happy ascending notes
+            synth.triggerAttackRelease(['C5', 'E5'], '8n', now);
+            break;
+        case 'powerup':
+            // Magical sparkle sound
+            leadSynth.triggerAttackRelease('G6', '16n', now);
+            leadSynth.triggerAttackRelease('C7', '16n', now + 0.1);
+            break;
+        case 'gameover':
+            // Sad descending notes
+            leadSynth.triggerAttackRelease('C5', '4n', now);
+            leadSynth.triggerAttackRelease('G4', '4n', now + 0.3);
+            leadSynth.triggerAttackRelease('C4', '2n', now + 0.6);
+            break;
     }
 }
 
@@ -180,6 +282,9 @@ function eatFood(snake, food) {
     const lastSegment = snakeBody[snakeBody.length - 1] || snake;
     const newSegment = this.add.rectangle(lastSegment.x, lastSegment.y, 18, 18, 0x0099cc);
     snakeBody.push(newSegment);
+    
+    // Play eat sound
+    playSound('eat');
 }
 
 function collectPowerup(snake, powerup) {
@@ -189,6 +294,9 @@ function collectPowerup(snake, powerup) {
     snake.setTint(0xffd700);
     score += 50;
     scoreText.setText('Score: ' + score);
+    
+    // Play powerup sound
+    playSound('powerup');
     
     // Spawn new powerup after delay
     this.time.delayedCall(10000, () => {
@@ -215,6 +323,8 @@ function hitObstacle(snake, obstacle) {
             fill: '#ff0000',
             fontFamily: 'Arial'
         }).setOrigin(0.5);
+        stopMusic();
+        playSound('gameover');
     }
 }
 
