@@ -53,15 +53,22 @@ function create() {
     // Create food
     food = this.physics.add.sprite(200, 200, 'food');
     
-    // Create obstacles
+    // Create obstacles aligned to grid
+    const gridSize = 20;
+    const cols = Math.floor(800 / gridSize);
+    const rows = Math.floor(600 / gridSize);
     for (let i = 0; i < 8; i++) {
-        const x = Phaser.Math.Between(50, 750);
-        const y = Phaser.Math.Between(50, 550);
+        const x = Phaser.Math.Between(2, cols - 3) * gridSize + gridSize / 2;
+        const y = Phaser.Math.Between(2, rows - 3) * gridSize + gridSize / 2;
         obstacles.create(x, y, 'obstacle');
     }
     
-    // Create powerup
-    const powerup = powerups.create(Phaser.Math.Between(50, 750), Phaser.Math.Between(50, 550), 'powerup');
+    // Create powerup aligned to grid
+    const powerup = powerups.create(
+        Phaser.Math.Between(2, cols - 3) * gridSize + gridSize / 2,
+        Phaser.Math.Between(2, rows - 3) * gridSize + gridSize / 2,
+        'powerup'
+    );
     
     // Score text
     scoreText = this.add.text(16, 16, 'Score: 0', {
@@ -150,8 +157,11 @@ function update(time, delta) {
 }
 
 function eatFood(snake, food) {
-    food.x = Phaser.Math.Between(20, 780);
-    food.y = Phaser.Math.Between(20, 580);
+    const gridSize = 20;
+    const cols = Math.floor(800 / gridSize);
+    const rows = Math.floor(600 / gridSize);
+    food.x = Phaser.Math.Between(2, cols - 3) * gridSize + gridSize / 2;
+    food.y = Phaser.Math.Between(2, rows - 3) * gridSize + gridSize / 2;
     score += 10;
     scoreText.setText('Score: ' + score);
     
@@ -172,7 +182,14 @@ function collectPowerup(snake, powerup) {
     // Spawn new powerup after delay
     this.time.delayedCall(10000, () => {
         if (!gameOver) {
-            powerups.create(Phaser.Math.Between(50, 750), Phaser.Math.Between(50, 550), 'powerup');
+            const gridSize = 20;
+            const cols = Math.floor(800 / gridSize);
+            const rows = Math.floor(600 / gridSize);
+            powerups.create(
+                Phaser.Math.Between(2, cols - 3) * gridSize + gridSize / 2,
+                Phaser.Math.Between(2, rows - 3) * gridSize + gridSize / 2,
+                'powerup'
+            );
         }
     });
 }
