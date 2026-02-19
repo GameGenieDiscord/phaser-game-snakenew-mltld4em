@@ -52,6 +52,7 @@ function create() {
     
     // Create food
     food = this.physics.add.sprite(200, 200, 'food');
+    alignToGrid(food);
     
     // Create obstacles aligned to grid
     const gridSize = 20;
@@ -60,7 +61,8 @@ function create() {
     for (let i = 0; i < 8; i++) {
         const x = Phaser.Math.Between(2, cols - 3) * gridSize + gridSize / 2;
         const y = Phaser.Math.Between(2, rows - 3) * gridSize + gridSize / 2;
-        obstacles.create(x, y, 'obstacle').setOrigin(0.5, 0.5);
+        const obstacle = obstacles.create(x, y, 'obstacle').setOrigin(0.5, 0.5);
+        alignToGrid(obstacle);
     }
     
     // Create powerup aligned to grid
@@ -70,6 +72,7 @@ function create() {
         'powerup'
     );
     powerup.setOrigin(0.5, 0.5);
+    alignToGrid(powerup);
     
     // Score text
     scoreText = this.add.text(16, 16, 'Score: 0', {
@@ -157,12 +160,19 @@ function update(time, delta) {
     }
 }
 
+function alignToGrid(obj) {
+    const gridSize = 20;
+    obj.x = Math.round(obj.x / gridSize) * gridSize;
+    obj.y = Math.round(obj.y / gridSize) * gridSize;
+}
+
 function eatFood(snake, food) {
     const gridSize = 20;
     const cols = Math.floor(800 / gridSize);
     const rows = Math.floor(600 / gridSize);
     food.x = Phaser.Math.Between(2, cols - 3) * gridSize + gridSize / 2;
     food.y = Phaser.Math.Between(2, rows - 3) * gridSize + gridSize / 2;
+    alignToGrid(food);
     score += 10;
     scoreText.setText('Score: ' + score);
     
@@ -192,6 +202,7 @@ function collectPowerup(snake, powerup) {
                 'powerup'
             );
             newPowerup.setOrigin(0.5, 0.5);
+            alignToGrid(newPowerup);
         }
     });
 }
