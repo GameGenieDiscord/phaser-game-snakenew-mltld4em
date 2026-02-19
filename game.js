@@ -182,8 +182,8 @@ function initMusic() {
     // Create reverb effect
     reverb = new Tone.Reverb(1.2).toDestination();
     
-    // Master gain to control overall volume
-    gain = new Tone.Gain(-12).toDestination();
+    // Master gain to control overall volume - much quieter now
+    gain = new Tone.Gain(-24).toDestination();
     
     // Bass synth for low-end groove
     bassSynth = new Tone.MonoSynth({
@@ -245,16 +245,19 @@ function playSound(type) {
     const now = Tone.now();
     switch (type) {
         case 'eat':
-            // Happy ascending notes
+            // Happy ascending notes - quieter
+            synth.volume.value = -30;
             synth.triggerAttackRelease(['C5', 'E5'], '8n', now);
             break;
         case 'powerup':
-            // Magical sparkle sound
+            // Magical sparkle sound - quieter
+            leadSynth.volume.value = -30;
             leadSynth.triggerAttackRelease('G6', '16n', now);
             leadSynth.triggerAttackRelease('C7', '16n', now + 0.1);
             break;
         case 'gameover':
-            // Sad descending notes
+            // Sad descending notes - quieter
+            leadSynth.volume.value = -30;
             leadSynth.triggerAttackRelease('C5', '4n', now);
             leadSynth.triggerAttackRelease('G4', '4n', now + 0.3);
             leadSynth.triggerAttackRelease('C4', '2n', now + 0.6);
