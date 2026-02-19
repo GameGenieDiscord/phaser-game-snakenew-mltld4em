@@ -60,7 +60,7 @@ function create() {
     for (let i = 0; i < 8; i++) {
         const x = Phaser.Math.Between(2, cols - 3) * gridSize + gridSize / 2;
         const y = Phaser.Math.Between(2, rows - 3) * gridSize + gridSize / 2;
-        obstacles.create(x, y, 'obstacle');
+        obstacles.create(x, y, 'obstacle').setOrigin(0.5, 0.5);
     }
     
     // Create powerup aligned to grid
@@ -69,6 +69,7 @@ function create() {
         Phaser.Math.Between(2, rows - 3) * gridSize + gridSize / 2,
         'powerup'
     );
+    powerup.setOrigin(0.5, 0.5);
     
     // Score text
     scoreText = this.add.text(16, 16, 'Score: 0', {
@@ -185,11 +186,12 @@ function collectPowerup(snake, powerup) {
             const gridSize = 20;
             const cols = Math.floor(800 / gridSize);
             const rows = Math.floor(600 / gridSize);
-            powerups.create(
+            const newPowerup = powerups.create(
                 Phaser.Math.Between(2, cols - 3) * gridSize + gridSize / 2,
                 Phaser.Math.Between(2, rows - 3) * gridSize + gridSize / 2,
                 'powerup'
             );
+            newPowerup.setOrigin(0.5, 0.5);
         }
     });
 }
