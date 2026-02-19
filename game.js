@@ -2,6 +2,7 @@
 let snake, food, cursors, score = 0, scoreText, gameOver = false;
 let obstacles, powerups, snakeBody = [], direction = 'right', nextDirection = 'right';
 let powerupActive = false, powerupTimer = 0;
+let lastMoveTime = 0; // Track when snake last moved
 
 function preload() {
     // Create simple textures programmatically
@@ -87,9 +88,13 @@ function update(time, delta) {
     if (cursors.up.isDown && direction !== 'down') nextDirection = 'up';
     if (cursors.down.isDown && direction !== 'up') nextDirection = 'down';
     
+    // Control speed: only move if enough time has passed
+    const moveDelay = powerupActive ? 120 : 200; // milliseconds between moves
+    if (time - lastMoveTime < moveDelay) return;
+    lastMoveTime = time;
+    
     // Move snake
     direction = nextDirection;
-    const speed = powerupActive ? 300 : 200;
     
     // Update snake position
     const prevX = snake.x;
